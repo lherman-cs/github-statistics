@@ -1,93 +1,39 @@
 import moment from "moment";
 import mockData from "./mock.json";
 
-export class GithubIssues {
-  constructor() {
-    this._issues = {};
-    this._end = moment();
-    this._start = this._end.clone();
+
+function group(issues, start, end, interval, state) {
+  if (!state) {
+    state = "all"
   }
 
-  extend(repo, issues) {
-    for (const issue of issues) {
-      this.append(repo, issue);
-    }
+  const range = end.diff(start, 'days');
+  const numSlots = Math.ceil(range / interval);
+  const slots = [];
+  start = end.clone().subtract(interval * (numSlots - 1), "days");
+  let current = start.clone();
+  for (let i = 0; i < numSlots; i++) {
+    slots.push({
+      at: current.clone(),
+      datapoints: [],
+    });
+    current.add(interval, 'days');
   }
 
-  append(repo, issue) {
-    issue = {
-      number: issue.number,
-      url: issue.url,
-      closed: issue.closed,
-      title: issue.title,
-      createdAt: moment(issue.createdAt),
-      updatedAt: moment(issue.updatedAt),
-      closedAt: issue.closedAt && moment(issue.closedAt),
-    };
-
-    if (!this._issues[repo]) {
-      this._issues[repo] = [];
+  const closed = state === "closed";
+  for (const issue of issues) {
+    if (state !== "all" && issue.closed !== closed) {
+      continue;
     }
 
-    this._issues[repo].push(issue);
-    if (issue.createdAt < this._start) {
-      this._start = issue.createdAt;
-    }
+    const at = closed ? issue.closedAt : issue.createdAt;
+    const i = Math.floor(at.diff(start, "days") / interval) + 1;
+    slots[i].datapoints.push(issue);
   }
 
-  _group(issues, interval, state) {
-    if (!state) {
-      state = "all";
-    }
-
-    const range = this._end.diff(this._start, 'days');
-    const numSlots = Math.ceil(range / interval);
-    const slots = [];
-    const start = this._end.clone().subtract(interval * (numSlots - 1), "days");
-    let current = start.clone();
-    for (let i = 0; i < numSlots; i++) {
-      slots.push({
-        at: current.clone(),
-        datapoints: [],
-      });
-      current.add(interval, 'days');
-    }
-
-    const closed = state === "closed"; // false
-    for (const issue of issues) {
-      if (state !== "all" && issue.closed !== closed) {
-        continue;
-      }
-
-      const at = state === "closed" ? issue.closedAt : issue.createdAt;
-      const i = Math.floor(at.diff(start, "days") / interval) + 1;
-      slots[i].datapoints.push(issue);
-    }
-
-    return slots;
-  }
-
-  groupFlat(interval, state) {
-    let flat = [];
-    for (const repo in this._issues) {
-      const issues = this._issues[repo];
-      flat.push(...issues);
-    }
-    return this._group(flat, interval, state);
-  }
-
-  groupRepo(repo, interval, state) {
-    this._group(this._issues[repo], interval, state);
-  }
-
-  group(interval, state) {
-    const results = {};
-    for (const repo in this._issues) {
-      results[repo] = this.groupRepo(repo, interval, state);
-    }
-    return results;
-  }
+  return slots;
 }
+
 
 export class GithubAPI {
   constructor(token, endpoint) {
@@ -107,13 +53,51 @@ export class GithubAPI {
     });
   }
 
-  async issues(repos, mock) {
-    const issues = new GithubIssues();
+  async issues(repos, interval, mock) {
+    const end = moment();
+    let start = end.clone();
     const greedyFetch = async (repo) => {
-      issues.extend(repo, await (mock ? this._mockIssues() : this._issues(repo)));
+      const rawIssues = await (mock ? this._mockIssues() : this._issues(repo));
+      const issues = [];
+      for (const rawIssue of rawIssues) {
+        const issue = {
+          number: rawIssue.number,
+          url: rawIssue.url,
+          closed: rawIssue.closed,
+          title: rawIssue.title,
+          createdAt: moment(rawIssue.createdAt),
+          updatedAt: moment(rawIssue.updatedAt),
+          closedAt: rawIssue.closedAt && moment(rawIssue.closedAt),
+        };
+
+        if (issue.createdAt < start) {
+          start = issue.createdAt.clone();
+        }
+
+        issues.push(issue);
+      }
+      return issues;
     };
 
-    await Promise.all(repos.map(greedyFetch));
+    const results = await Promise.all(repos.map(greedyFetch));
+    const groupIssues = (issues) => {
+      return {
+        all: group(issues, start, end, interval, "all"),
+        open: group(issues, start, end, interval, "open"),
+        closed: group(issues, start, end, interval, "closed"),
+      };
+    }
+
+    const issues = {};
+    const flat = [];
+    for (let i = 0; i < results.length; i++) {
+      const repo = repos[i];
+      const result = results[i];
+      issues[repo] = groupIssues(result);
+      flat.push(...result);
+    }
+
+    issues["all"] = groupIssues(flat);
     return issues;
   }
 

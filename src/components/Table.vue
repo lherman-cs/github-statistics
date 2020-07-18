@@ -9,16 +9,42 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <th>Webrtc</th>
-        <th>1</th>
-        <th>2</th>
-        <th>3</th>
+      <tr v-for="(row, index) in table" :key="index">
+        <th v-for="(col, index) in row" :key="index">{{ col }}</th>
       </tr>
     </tbody>
   </table>
 </template>
 
 <script>
-export default {};
+export default {
+  props: ["cumulativeSums", "index"],
+  computed: {
+    table() {
+      const rows = [];
+
+      for (const repo in this.cumulativeSums) {
+        if (repo === "all") {
+          continue;
+        }
+
+        const cumulativeSums = this.cumulativeSums[repo];
+        const closedSums = cumulativeSums.closed;
+        const allSums = cumulativeSums.all;
+        const index = this.index;
+        console.log({ cumulativeSums, index });
+
+        const cols = [];
+        cols.push(repo);
+        cols.push(allSums[index - 1].y - closedSums[index - 1].y);
+        cols.push(allSums[index].y - closedSums[index].y);
+        cols.push(closedSums[index].y - closedSums[index - 1].y);
+
+        rows.push(cols);
+      }
+
+      return rows;
+    }
+  }
+};
 </script>

@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <div id="container">
-      <CumulativeFlow :cumulative-sums="cumulativeSums" />
-      <Table />
+      <CumulativeFlow :cumulative-sums="cumulativeSums && cumulativeSums.all" />
+      <Table :cumulative-sums="cumulativeSums" :index="index" />
     </div>
   </div>
 </template>
@@ -20,11 +20,10 @@ export default {
   },
   data() {
     return {
-      token: "",
       // interval determines the range between samples in days
       interval: 7,
-      repos: [],
-      originalIssues: null
+      issues: null,
+      index: -1
     };
   },
   async mounted() {
@@ -32,52 +31,33 @@ export default {
 
     // TODO: Validate parameters and show error message
 
-    this.repos = query.repos.split(",");
+    const repos = query.repos.split(",");
     // this.interval = parseInt(query.interval);
 
+    /*
     const api = new GithubAPI("");
-    this.originalIssues = await api.issues(
+    this.issues = await api.issues(
       ["awslabs/amazon-kinesis-video-streams-webrtc-sdk-c"],
+      this.interval,
       true
     );
+    this.index = this.issues.all.all.length - 1;
+    */
 
-    /*
     const result = await firebase.auth().getRedirectResult();
     if (result.credential) {
-      this.token = result.credential.accessToken;
-      console.log({ token: this.token });
-      this.originalIssues = await this.api.issues([
-        "awslabs/amazon-kinesis-video-streams-webrtc-sdk-c"
-      ]);
+      const token = result.credential.accessToken;
+      const api = new GithubAPI(token);
+      this.issues = await api.issues(repos, this.interval);
+      this.index = this.issues.all.all.length - 1;
     } else {
       await this.login();
     }
-    */
   },
   computed: {
-    api() {
-      return new GithubAPI(this.token);
-    },
-    groupedIssues() {
-      if (!this.originalIssues) {
-        return null;
-      }
-
-      const group = state =>
-        this.originalIssues.groupFlat(this.interval, state);
-      return {
-        all: group("all"),
-        open: group("open"),
-        closed: group("closed")
-      };
-    },
     cumulativeSums() {
-      if (!this.groupedIssues) {
-        return {
-          all: [],
-          open: [],
-          closed: []
-        };
+      if (!this.issues) {
+        return null;
       }
 
       const cumulativeSum = sum => {
@@ -91,17 +71,17 @@ export default {
         };
       };
 
-      const cumulativeSums = {
-        all: this.groupedIssues.all.map(cumulativeSum(0)),
-        open: this.groupedIssues.open.map(cumulativeSum(0)),
-        closed: this.groupedIssues.closed.map(cumulativeSum(0))
-      };
-
-      console.log({
-        cumulativeSums,
-        groupedIssues: this.groupedIssues,
-        originalIssues: this.originalIssues
+      const cumulativeSumAll = groupedIssues => ({
+        all: groupedIssues.all.map(cumulativeSum(0)),
+        open: groupedIssues.open.map(cumulativeSum(0)),
+        closed: groupedIssues.closed.map(cumulativeSum(0))
       });
+
+      const cumulativeSums = {};
+      for (const repo in this.issues) {
+        const groupedIssues = this.issues[repo];
+        cumulativeSums[repo] = cumulativeSumAll(groupedIssues);
+      }
       return cumulativeSums;
     }
   },
