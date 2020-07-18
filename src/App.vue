@@ -47,9 +47,18 @@ export default {
     const repos = query.repos.split(",");
     // this.interval = parseInt(query.interval);
 
-    const result = await firebase.auth().getRedirectResult();
-    if (result.credential) {
-      const token = result.credential.accessToken;
+    let token = null;
+
+    token = window.localStorage.getItem("token");
+    if (!token) {
+      const result = await firebase.auth().getRedirectResult();
+      if (result.credential) {
+        token = result.credential.accessToken;
+        window.localStorage.setItem("token", token);
+      }
+    }
+
+    if (token) {
       const api = new GithubAPI(token);
       this.issues = await api.issues(repos, this.interval);
       this.index = this.issues.all.all.length - 1;
