@@ -10,7 +10,7 @@
 <script>
 import firebase from "firebase/app";
 import { GithubAPI } from "./api";
-import CumulativeFlow from "./charts/CumulativeFlow.vue";
+import CumulativeFlow from "./components/CumulativeFlow.vue";
 
 export default {
   components: {
