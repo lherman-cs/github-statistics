@@ -5,7 +5,7 @@ const { reactiveData } = mixins;
 export default {
   extends: Line,
   mixins: [reactiveData],
-  props: ["cumulativeSums"],
+  props: ["cumulativeSums", "start"],
   data() {
     return {
       chartData: "",
@@ -44,16 +44,33 @@ export default {
         return;
       }
 
+      const sliceByStart = (sums, start) => {
+        if (!start) {
+          return sums;
+        }
+
+        for (let i = 0; i < sums.length; i++) {
+          if (sums[i].x >= start) {
+            return sums.slice(i);
+          }
+        }
+
+        return [];
+      };
+
+      const allSums = sliceByStart(cumulativeSums.all, this.start);
+      const closedSums = sliceByStart(cumulativeSums.closed, this.start);
+
       const openDataset = {
         label: "Open",
-        data: cumulativeSums.all.map((e, i) => ({
+        data: allSums.map((e, i) => ({
           ...e,
-          y: e.y - cumulativeSums.closed[i].y
+          y: e.y - closedSums[i].y
         }))
       };
       const closedDataset = {
         label: "Closed",
-        data: cumulativeSums.closed
+        data: closedSums
       };
       const datasets = [closedDataset, openDataset];
       this.chartData = { datasets };

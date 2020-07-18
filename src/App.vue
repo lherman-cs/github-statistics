@@ -3,6 +3,7 @@
     <div id="container">
       <CumulativeFlow
         :cumulative-sums="cumulativeSums && cumulativeSums.all"
+        :start="start"
         @on-receive="updateIndex"
       />
       <Table :cumulative-sums="cumulativeSums" :index="index" />
@@ -12,6 +13,7 @@
 
 <script>
 import firebase from "firebase/app";
+import moment from "moment";
 import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
 import Table from "./components/Table.vue";
@@ -26,7 +28,8 @@ export default {
       // interval determines the range between samples in days
       interval: 7,
       issues: null,
-      index: -1
+      index: -1,
+      start: null
     };
   },
   async mounted() {
@@ -45,6 +48,7 @@ export default {
     // TODO: Validate parameters and show error message
 
     const repos = query.repos.split(",");
+    this.start = query.start && moment(query.start);
     // this.interval = parseInt(query.interval);
 
     let token = null;
