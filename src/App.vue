@@ -1,7 +1,10 @@
 <template>
   <div id="app">
     <div id="container">
-      <CumulativeFlow :cumulative-sums="cumulativeSums && cumulativeSums.all" />
+      <CumulativeFlow
+        :cumulative-sums="cumulativeSums && cumulativeSums.all"
+        @on-receive="updateIndex"
+      />
       <Table :cumulative-sums="cumulativeSums" :index="index" />
     </div>
   </div>
@@ -27,13 +30,6 @@ export default {
     };
   },
   async mounted() {
-    const query = this.$route.query;
-
-    // TODO: Validate parameters and show error message
-
-    const repos = query.repos.split(",");
-    // this.interval = parseInt(query.interval);
-
     /*
     const api = new GithubAPI("");
     this.issues = await api.issues(
@@ -43,6 +39,13 @@ export default {
     );
     this.index = this.issues.all.all.length - 1;
     */
+
+    const query = this.$route.query;
+
+    // TODO: Validate parameters and show error message
+
+    const repos = query.repos.split(",");
+    // this.interval = parseInt(query.interval);
 
     const result = await firebase.auth().getRedirectResult();
     if (result.credential) {
@@ -86,6 +89,13 @@ export default {
     }
   },
   methods: {
+    updateIndex(index) {
+      // since some charts use previous data, we can't use 0
+      if (index === 0) {
+        return;
+      }
+      this.index = index;
+    },
     async login() {
       const provider = new firebase.auth.GithubAuthProvider();
       provider.addScope("user");

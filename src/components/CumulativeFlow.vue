@@ -6,29 +6,35 @@ export default {
   extends: Line,
   mixins: [reactiveData],
   props: ["cumulativeSums"],
-  data: () => ({
-    chartData: "",
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        xAxes: [
-          {
-            type: "time",
-            distribution: "series",
-            time: {
-              unit: "day"
+  data() {
+    return {
+      chartData: "",
+      options: {
+        onClick: (point, event) => {
+          const item = event[0];
+          this.$emit("on-receive", item._index);
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [
+            {
+              type: "time",
+              distribution: "series",
+              time: {
+                unit: "day"
+              }
             }
-          }
-        ],
-        yAxes: [
-          {
-            stacked: true
-          }
-        ]
+          ],
+          yAxes: [
+            {
+              stacked: true
+            }
+          ]
+        }
       }
-    }
-  }),
+    };
+  },
   mounted() {
     this.renderChart(this.chartData, this.options);
   },

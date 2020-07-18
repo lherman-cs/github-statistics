@@ -27,7 +27,8 @@ function group(issues, start, end, interval, state) {
     }
 
     const at = closed ? issue.closedAt : issue.createdAt;
-    const i = Math.floor(at.diff(start, "days") / interval) + 1;
+    const diff = at.diff(start, "days");
+    const i = Math.floor(diff / interval) + 1;
     slots[i].datapoints.push(issue);
   }
 
