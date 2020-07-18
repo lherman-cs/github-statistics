@@ -41,11 +41,10 @@ export class GithubIssues {
     }
 
     const range = this._end.diff(this._start, 'days');
-
     const numSlots = Math.ceil(range / interval);
-    console.log({state, range, numSlots});
     const slots = [];
-    let current = this._start.clone();
+    const start = this._end.clone().subtract(interval * (numSlots - 1), "days");
+    let current = start.clone();
     for (let i = 0; i < numSlots; i++) {
       slots.push({
         at: current.clone(),
@@ -61,7 +60,7 @@ export class GithubIssues {
       }
 
       const at = state === "closed" ? issue.closedAt : issue.createdAt;
-      const i = Math.floor(at.diff(this._start, "days") / interval);
+      const i = Math.floor(at.diff(start, "days") / interval) + 1;
       slots[i].datapoints.push(issue);
     }
 
