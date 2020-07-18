@@ -53,7 +53,7 @@ export class GithubIssues {
       current.add(interval, 'days');
     }
 
-    const closed = state === "closed";
+    const closed = state === "closed"; // false
     for (const issue of issues) {
       if (state !== "all" && issue.closed !== closed) {
         continue;
@@ -64,7 +64,6 @@ export class GithubIssues {
       slots[i].datapoints.push(issue);
     }
 
-    console.log({state, issues, slots});
     return slots;
   }
 
@@ -72,8 +71,7 @@ export class GithubIssues {
     let flat = [];
     for (const repo in this._issues) {
       const issues = this._issues[repo];
-      flat = flat.concat(issues);
-      console.log({issues, flat});
+      flat.push(...issues);
     }
     return this._group(flat, interval, state);
   }
@@ -156,7 +154,6 @@ query {
       const body = await response.json();
 
       const result = body.data.repository.issues;
-      console.log({result});
       hasNextPage = result.pageInfo.hasNextPage;
       endCursor = `, after:"${result.pageInfo.endCursor}"`;
       issues.push(...result.edges.map(e => e.node));

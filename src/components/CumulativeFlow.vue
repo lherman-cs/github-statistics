@@ -5,7 +5,7 @@ const { reactiveData } = mixins;
 export default {
   extends: Line,
   mixins: [reactiveData],
-  props: ["issues"],
+  props: ["cumulativeSums"],
   data: () => ({
     chartData: "",
     options: {
@@ -33,40 +33,24 @@ export default {
     this.renderChart(this.chartData, this.options);
   },
   watch: {
-    issues: function(issues) {
-      if (!issues) {
+    cumulativeSums: function(cumulativeSums) {
+      if (!cumulativeSums) {
         return;
       }
 
-      const cumulativeSum = sum => {
-        return sample => {
-          sum += sample.datapoints.length;
-          return {
-            x: sample.at,
-            y: sum
-          };
-        };
-      };
-
-      const closedSums = issues.closed.map(cumulativeSum(0));
-      const openSums = issues.all.map(cumulativeSum(0)).map((s, i) => ({
-        x: s.x,
-        y: s.y - closedSums[i].y
-      }));
-
-      console.log({ all: issues.all, closed: issues.closed });
-      const totalDataset = {
+      const openDataset = {
         label: "Open",
-        data: openSums
+        data: cumulativeSums.all.map((e, i) => ({
+          ...e,
+          y: e.y - cumulativeSums.closed[i].y
+        }))
       };
       const closedDataset = {
         label: "Closed",
-        data: closedSums
+        data: cumulativeSums.closed
       };
-      const datasets = [closedDataset, totalDataset];
-
+      const datasets = [closedDataset, openDataset];
       this.chartData = { datasets };
-      console.log(datasets);
     }
   }
 };

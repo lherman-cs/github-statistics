@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <div id="container">
-      <CumulativeFlow :issues="issues" />
-      <CumulativeFlow :issues="issues" />
+      <CumulativeFlow :cumulative-sums="cumulativeSums" />
+      <Table />
     </div>
   </div>
 </template>
@@ -11,10 +11,12 @@
 import firebase from "firebase/app";
 import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
+import Table from "./components/Table.vue";
 
 export default {
   components: {
-    CumulativeFlow
+    CumulativeFlow,
+    Table
   },
   data() {
     return {
@@ -56,7 +58,7 @@ export default {
     api() {
       return new GithubAPI(this.token);
     },
-    issues() {
+    groupedIssues() {
       if (!this.originalIssues) {
         return null;
       }
@@ -68,6 +70,39 @@ export default {
         open: group("open"),
         closed: group("closed")
       };
+    },
+    cumulativeSums() {
+      if (!this.groupedIssues) {
+        return {
+          all: [],
+          open: [],
+          closed: []
+        };
+      }
+
+      const cumulativeSum = sum => {
+        return sample => {
+          sum += sample.datapoints.length;
+          return {
+            x: sample.at,
+            y: sum,
+            datapoints: sample.datapoints
+          };
+        };
+      };
+
+      const cumulativeSums = {
+        all: this.groupedIssues.all.map(cumulativeSum(0)),
+        open: this.groupedIssues.open.map(cumulativeSum(0)),
+        closed: this.groupedIssues.closed.map(cumulativeSum(0))
+      };
+
+      console.log({
+        cumulativeSums,
+        groupedIssues: this.groupedIssues,
+        originalIssues: this.originalIssues
+      });
+      return cumulativeSums;
     }
   },
   methods: {
