@@ -49,7 +49,10 @@ export default {
 
     const repos = query.repos.split(",");
     this.start = query.start && moment(query.start);
-    // this.interval = parseInt(query.interval);
+    this.interval = parseInt(query.interval);
+    if (!this.interval) {
+      this.interval = 7;
+    }
 
     let token = null;
 
