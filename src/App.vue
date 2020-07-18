@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <div class="chart">
-      <CumulativeFlow :issues="issues" v-show="issues" />
+    <div id="container">
+      <CumulativeFlow :issues="issues" />
+      <CumulativeFlow :issues="issues" />
     </div>
   </div>
 </template>
@@ -106,8 +107,14 @@ body {
   height: 100%;
 }
 
-.chart {
-  width: 1920px;
-  height: 640px;
+#container {
+  display: grid;
+  height: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+#container > * {
+  max-height: 800px;
+  min-height: 400px;
 }
 </style>

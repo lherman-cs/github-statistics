@@ -10,6 +10,7 @@ export default {
     chartData: "",
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         xAxes: [
           {
