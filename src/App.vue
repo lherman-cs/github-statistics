@@ -32,13 +32,13 @@ export default {
     this.repos = query.repos.split(",");
     // this.interval = parseInt(query.interval);
 
-    /*
-    this.token = "POOP";
-    this.originalIssues = await this.api.issues([
-      "awslabs/amazon-kinesis-video-streams-webrtc-sdk-c"
-    ]);
-    */
+    const api = new GithubAPI("");
+    this.originalIssues = await api.issues(
+      ["awslabs/amazon-kinesis-video-streams-webrtc-sdk-c"],
+      true
+    );
 
+    /*
     const result = await firebase.auth().getRedirectResult();
     if (result.credential) {
       this.token = result.credential.accessToken;
@@ -49,6 +49,7 @@ export default {
     } else {
       await this.login();
     }
+    */
   },
   computed: {
     api() {

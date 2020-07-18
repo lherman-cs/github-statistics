@@ -8,15 +8,21 @@ export class GithubIssues {
     this._start = this._end.clone();
   }
 
+  extend(repo, issues) {
+    for (const issue of issues) {
+      this.append(repo, issue);
+    }
+  }
+
   append(repo, issue) {
     issue = {
       number: issue.number,
       url: issue.url,
-      state: issue.state,
+      closed: issue.closed,
       title: issue.title,
-      createdAt: moment(issue.created_at),
-      updatedAt: moment(issue.updated_at),
-      closedAt: issue.closed_at && moment(issue.closed_at),
+      createdAt: moment(issue.createdAt),
+      updatedAt: moment(issue.updatedAt),
+      closedAt: issue.closedAt && moment(issue.closedAt),
     };
 
     if (!this._issues[repo]) {
@@ -48,8 +54,9 @@ export class GithubIssues {
       current.add(interval, 'days');
     }
 
+    const closed = state === "closed";
     for (const issue of issues) {
-      if (state !== "all" && issue.state !== state) {
+      if (state !== "all" && issue.closed !== closed) {
         continue;
       }
 
@@ -87,75 +94,75 @@ export class GithubIssues {
 
 export class GithubAPI {
   constructor(token, endpoint) {
-    this.token = token;
-    this.endpoint = endpoint ? endpoint : "https://api.github.com";
+    this._token = token;
+    this._endpoint = endpoint ? endpoint : "https://api.github.com/graphql";
   }
 
-  _fetch(path, opts) {
+  _fetch(query, opts) {
     opts = opts ? opts : {};
-    return fetch(path, {
+    return fetch(this._endpoint, {
+      method: "POST",
       headers: {
-        "User-Agent": "Our script", // github requires user-agent header
-        "Authorization": `token ${this.token}`,
+        "Authorization": `bearer ${this._token}`,
       },
+      body: JSON.stringify({query}),
       ...opts,
     });
   }
 
-  async limit() {
-    const resp = await this._fetch(`${this.endpoint}/rate_limit`);
-    const body = await resp.json();
-    const headers = resp.headers;
-    return {body, headers};
-  }
-
-  async issues(repos) {
+  async issues(repos, mock) {
     const issues = new GithubIssues();
     const greedyFetch = async (repo) => {
-      for await (const issue of this._issues(repo)) {
-        issues.append(repo, issue);
-      }
+      issues.extend(repo, await (mock ? this._mockIssues() : this._issues(repo)));
     };
 
     await Promise.all(repos.map(greedyFetch));
     return issues;
   }
 
-  async* _mockIssues() {
-    console.log({mockData});
-    for (const issue of mockData) {
-      yield issue;
-    }
+  async _mockIssues() {
+    return mockData;
   }
 
-  async* _issues(repo) {
-    let url = `${this.endpoint}/repos/${repo}/issues?per_page=100&state=all&filter=all`;
+  async _issues(repo) {
+    const [owner, name] = repo.split("/");
+    const issues = [];
 
-    while (url) {
-      const response = await this._fetch(url);
-      const body = await response.json();
-
-      let nextPage = null;
-
-      const links = response.headers.get("Link");
-      if (links) {
-        for (const link of links.split(',')) {
-          nextPage = link.match(/<(.*?)>; rel="next"/);
-          if (nextPage) {
-            nextPage = nextPage?.[1];
-            break;
-          }
+    let endCursor = "";
+    let hasNextPage = true;
+    while (hasNextPage) {
+      let query = `
+query {
+  repository(owner:"${owner}", name:"${name}") {
+    issues(first:100, states:[CLOSED,OPEN]${endCursor}) {
+      edges {
+        node {
+          title
+          url
+          closed
+          createdAt
+          closedAt
         }
-        console.log({nextPage});
       }
-
-      url = nextPage;
-      for (const issue of body) {
-        if ("pull_request" in issue) {
-          continue;
-        }
-        yield issue;
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
+  }
+}`;
+
+
+      const response = await this._fetch(query);
+      const body = await response.json();
+
+      const result = body.data.repository.issues;
+      console.log({result});
+      hasNextPage = result.pageInfo.hasNextPage;
+      endCursor = `, after:"${result.pageInfo.endCursor}"`;
+      issues.push(...result.edges.map(e => e.node));
+    }
+
+    return issues;
   }
 }
