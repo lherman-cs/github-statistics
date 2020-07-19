@@ -74,6 +74,7 @@ export class GithubAPI {
           createdAt: moment(rawIssue.createdAt),
           updatedAt: moment(rawIssue.updatedAt),
           closedAt: rawIssue.closedAt && moment(rawIssue.closedAt),
+          labels: rawIssue.labels,
         };
 
         if (issue.createdAt < start) {
@@ -131,6 +132,13 @@ query {
           closed
           createdAt
           closedAt
+          labels(first:100) {
+            edges {
+              node {
+                name
+              }
+            }
+          }
         }
       }
       pageInfo {
@@ -148,7 +156,10 @@ query {
       const result = body.data.repository.issues;
       hasNextPage = result.pageInfo.hasNextPage;
       endCursor = `, after:"${result.pageInfo.endCursor}"`;
-      issues.push(...result.edges.map(e => e.node));
+      issues.push(...result.edges.map(e => ({
+        ...e.node,
+        labels: e.node.labels.edges.map(l => l.node.name),
+      })));
     }
 
     return issues;

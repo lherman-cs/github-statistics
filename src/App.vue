@@ -9,6 +9,10 @@
         @on-receive="updateIndex"
       />
       <Table :cumulative-sums="slicedCumulativeSums" :index="index" />
+      <CategoryPie
+        :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
+        :index="index"
+      />
     </div>
   </div>
 </template>
@@ -19,11 +23,13 @@ import moment from "moment";
 import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
 import Table from "./components/Table.vue";
+import CategoryPie from "./components/CategoryPie.vue";
 
 export default {
   components: {
     CumulativeFlow,
-    Table
+    Table,
+    CategoryPie
   },
   data() {
     return {
