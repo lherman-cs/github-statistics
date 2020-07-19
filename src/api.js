@@ -54,9 +54,14 @@ export class GithubAPI {
     });
   }
 
-  async issues(repos, interval, mock) {
+  async issues(repos, interval, onProgress, mock) {
     const end = moment();
     let start = end.clone();
+    let current = 0;
+    const increment = () => {
+      current++;
+      onProgress(current, repos.length);
+    };
     const greedyFetch = async (repo) => {
       const rawIssues = await (mock ? this._mockIssues() : this._issues(repo));
       const issues = [];
@@ -77,6 +82,8 @@ export class GithubAPI {
 
         issues.push(issue);
       }
+
+      increment();
       return issues;
     };
 

@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <div id="container">
+    <div v-if="progress < 100">
+      <progress class="progress is-info is-small" :value="progress" max="100">{{ progress }}%</progress>
+    </div>
+    <div id="container" v-else>
       <CumulativeFlow
         :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
         @on-receive="updateIndex"
@@ -28,7 +31,9 @@ export default {
       interval: 7,
       issues: null,
       index: -1,
-      start: null
+      start: null,
+      progress: 0,
+      unfetchedRepos: []
     };
   },
   async mounted() {
@@ -66,7 +71,11 @@ export default {
 
     if (token) {
       const api = new GithubAPI(token);
-      this.issues = await api.issues(repos, this.interval);
+      this.issues = await api.issues(
+        repos,
+        this.interval,
+        (progress, total) => (this.progress = (progress * 100) / total)
+      );
     } else {
       await this.login();
     }
