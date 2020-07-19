@@ -32,13 +32,18 @@ export default {
         const closedSums = cumulativeSums.closed;
         const allSums = cumulativeSums.all;
         const index = this.index;
-        console.log({ cumulativeSums, index });
 
         const cols = [];
         cols.push(repo);
-        cols.push(allSums[index - 1].y - closedSums[index - 1].y);
-        cols.push(allSums[index].y - closedSums[index].y);
-        cols.push(closedSums[index].y - closedSums[index - 1].y);
+        if (!index || index <= 0) {
+          cols.push("N/A");
+          cols.push("N/A");
+          cols.push("N/A");
+        } else {
+          cols.push(allSums[index - 1].y - closedSums[index - 1].y);
+          cols.push(allSums[index].y - closedSums[index].y);
+          cols.push(closedSums[index].y - closedSums[index - 1].y);
+        }
 
         rows.push(cols);
       }

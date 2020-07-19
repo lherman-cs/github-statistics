@@ -2,11 +2,10 @@
   <div id="app">
     <div id="container">
       <CumulativeFlow
-        :cumulative-sums="cumulativeSums && cumulativeSums.all"
-        :start="start"
+        :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
         @on-receive="updateIndex"
       />
-      <Table :cumulative-sums="cumulativeSums" :index="index" />
+      <Table :cumulative-sums="slicedCumulativeSums" :index="index" />
     </div>
   </div>
 </template>
@@ -68,7 +67,6 @@ export default {
     if (token) {
       const api = new GithubAPI(token);
       this.issues = await api.issues(repos, this.interval);
-      this.index = this.issues.all.all.length - 1;
     } else {
       await this.login();
     }
@@ -102,6 +100,38 @@ export default {
         cumulativeSums[repo] = cumulativeSumAll(groupedIssues);
       }
       return cumulativeSums;
+    },
+    slicedCumulativeSums() {
+      if (!this.cumulativeSums) {
+        return null;
+      }
+
+      const sliceByStart = (sums, start) => {
+        if (!start) {
+          return sums;
+        }
+
+        for (let i = 0; i < sums.length; i++) {
+          if (sums[i].x >= start) {
+            return sums.slice(i);
+          }
+        }
+
+        return [];
+      };
+
+      const sliceAll = cumulativeSums => ({
+        all: sliceByStart(cumulativeSums.all, this.start),
+        closed: sliceByStart(cumulativeSums.closed, this.start),
+        open: sliceByStart(cumulativeSums.open, this.start)
+      });
+
+      const slicedCumulativeSums = {};
+      for (const repo in this.cumulativeSums) {
+        const cumulativeSums = this.cumulativeSums[repo];
+        slicedCumulativeSums[repo] = sliceAll(cumulativeSums);
+      }
+      return slicedCumulativeSums;
     }
   },
   methods: {

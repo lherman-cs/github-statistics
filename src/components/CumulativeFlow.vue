@@ -44,36 +44,20 @@ export default {
         return;
       }
 
-      const sliceByStart = (sums, start) => {
-        if (!start) {
-          return sums;
-        }
-
-        for (let i = 0; i < sums.length; i++) {
-          if (sums[i].x >= start) {
-            return sums.slice(i);
-          }
-        }
-
-        return [];
-      };
-
-      const allSums = sliceByStart(cumulativeSums.all, this.start);
-      const closedSums = sliceByStart(cumulativeSums.closed, this.start);
-
       const openDataset = {
         label: "Open",
-        data: allSums.map((e, i) => ({
+        data: cumulativeSums.all.map((e, i) => ({
           ...e,
-          y: e.y - closedSums[i].y
+          y: e.y - cumulativeSums.closed[i].y
         }))
       };
       const closedDataset = {
         label: "Closed",
-        data: closedSums
+        data: cumulativeSums.closed
       };
       const datasets = [closedDataset, openDataset];
       this.chartData = { datasets };
+      this.$emit("on-receive", cumulativeSums.all.length - 1);
     }
   }
 };
