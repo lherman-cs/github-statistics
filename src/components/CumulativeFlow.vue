@@ -12,7 +12,7 @@ export default {
       options: {
         onClick: (point, event) => {
           const item = event[0];
-          this.$emit("on-receive", item._index);
+          this.handleOnClick(item._index);
         },
         responsive: true,
         maintainAspectRatio: false,
@@ -57,7 +57,12 @@ export default {
       };
       const datasets = [closedDataset, openDataset];
       this.chartData = { datasets };
-      this.$emit("on-receive", cumulativeSums.all.length - 1);
+      this.handleOnClick(cumulativeSums.all.length - 1);
+    }
+  },
+  methods: {
+    handleOnClick(index) {
+      this.$emit("on-receive", index);
     }
   }
 };
