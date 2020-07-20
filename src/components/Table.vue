@@ -1,26 +1,34 @@
 <template>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Repo</th>
-        <th>#Open Prev</th>
-        <th>#Open End</th>
-        <th>#Closed</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(row, index) in table" :key="index">
-        <th v-for="(col, index) in row" :key="index">{{ col }}</th>
-      </tr>
-    </tbody>
-  </table>
+  <b-table :data="data" :columns="columns"></b-table>
 </template>
 
 <script>
 export default {
   props: ["cumulativeSums", "index"],
+  data() {
+    return {
+      columns: [
+        {
+          field: "repo",
+          label: "Repository"
+        },
+        {
+          field: "openIssuesPrev",
+          label: "Open Issues Prev"
+        },
+        {
+          field: "openIssuesNext",
+          label: "Open Issues Next"
+        },
+        {
+          field: "closedIssues",
+          label: "Closed Issues"
+        }
+      ]
+    };
+  },
   computed: {
-    table() {
+    data() {
       const rows = [];
 
       for (const repo in this.cumulativeSums) {
@@ -45,7 +53,12 @@ export default {
           cols.push(closedSums[index].y - closedSums[index - 1].y);
         }
 
-        rows.push(cols);
+        rows.push({
+          repo: cols[0],
+          openIssuesPrev: cols[1],
+          openIssuesNext: cols[2],
+          closedIssues: cols[3]
+        });
       }
 
       return rows;

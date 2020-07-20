@@ -2,9 +2,10 @@ import Vue from "vue";
 import App from "./App.vue";
 import VueRouter from "vue-router";
 import firebase from "firebase";
-import { library, dom } from "@fortawesome/fontawesome-svg-core";
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import "bulma/css/bulma.min.css";
+import {library, dom} from "@fortawesome/fontawesome-svg-core";
+import {faGithub} from "@fortawesome/free-brands-svg-icons";
+import Buefy from "buefy";
+import "buefy/dist/buefy.css";
 
 library.add(faGithub);
 dom.watch();
@@ -23,6 +24,7 @@ firebase.initializeApp(firebaseConfig);
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
+Vue.use(Buefy);
 
 const router = new VueRouter({
   mode: "history",

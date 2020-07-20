@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <div v-if="progress < 100">
-      <progress class="progress is-info is-small" :value="progress" max="100">{{ progress }}%</progress>
-    </div>
-    <div id="container" v-else>
+    <section v-if="progress < 100">
+      <b-progress type="is-info" :value="progress" show-value format="percent"></b-progress>
+    </section>
+    <section id="container" v-else>
       <CumulativeFlow
         :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
         @on-receive="updateIndex"
@@ -13,7 +13,7 @@
         :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
         :index="index"
       />
-    </div>
+    </section>
   </div>
 </template>
 
