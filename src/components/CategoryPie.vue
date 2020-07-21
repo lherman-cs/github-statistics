@@ -15,12 +15,12 @@ const IssueList = {
                     <b-tag 
                       v-for="(label, i) in issue.labels" :key="i"
                       :style="{ 
-                        backgroundColor: issuesPerLabel[label.name].color,
-                        color: fontColor(issuesPerLabel[label.name].color)
+                        backgroundColor: issuesPerLabel[label].color,
+                        color: fontColor(issuesPerLabel[label].color)
                       }"
                       rounded
                       class="has-text-weight-bold"
-                    >{{ label.name }}</b-tag>
+                    >{{label}}</b-tag>
                   </div>
                 </section>
                 <footer class="modal-card-foot">
@@ -107,7 +107,8 @@ export default {
             : datapoint.labels;
 
         for (const label of labels) {
-          const key = label.name.toLowerCase();
+          const hash = label => label.name.toLowerCase();
+          const key = hash(label);
           let value = issuesPerLabel[key];
           if (!value) {
             value = {
@@ -116,7 +117,10 @@ export default {
             };
           }
 
-          value.issues.push(datapoint);
+          value.issues.push({
+            ...datapoint,
+            labels: datapoint.labels.map(hash)
+          });
           value.color = "#" + label.color;
           issuesPerLabel[key] = value;
         }
