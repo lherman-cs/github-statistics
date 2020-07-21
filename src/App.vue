@@ -7,9 +7,10 @@
       <CumulativeFlow
         :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
         @on-receive="updateIndex"
+        id="cumulative-flow"
       />
-      <Table :cumulative-sums="slicedCumulativeSums" :index="index" />
-      <CategoryPie :issues="slicedIssues && slicedIssues.all.all" :index="index" />
+      <CategoryPie :issues="slicedIssues && slicedIssues.all.all" :index="index" id="category-pie" />
+      <Table :cumulative-sums="slicedCumulativeSums" :index="index" id="summary-table" />
     </section>
   </div>
 </template>
@@ -201,11 +202,35 @@ body {
 #container {
   display: grid;
   height: 100%;
+  grid-template-areas:
+    "category-pie summary-table"
+    "cumulative-flow cumulative-flow";
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+@media only screen and (max-width: 968px) {
+  #container {
+    grid-template-areas:
+      "cumulative-flow"
+      "category-pie"
+      "summary-table";
+  }
 }
 
 #container > * {
   max-height: 800px;
   min-height: 400px;
+}
+
+#cumulative-flow {
+  grid-area: cumulative-flow;
+}
+
+#category-pie {
+  grid-area: category-pie;
+}
+
+#summary-table {
+  grid-area: summary-table;
 }
 </style>

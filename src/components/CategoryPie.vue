@@ -84,6 +84,7 @@ export default {
     return {
       chartData: "",
       options: {
+        maintainAspectRatio: false,
         onClick: (point, event) => {
           const item = event[0];
           if (!item) {
