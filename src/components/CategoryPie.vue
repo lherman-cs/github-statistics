@@ -10,17 +10,19 @@ const IssueList = {
                     <p class="modal-card-title">Issues</p>
                 </header>
                 <section class="modal-card-body">
-                  <div v-for="(issue, i) in issuesPerLabel[label].issues" :key="i">
-                    <a class="has-text-weight-bold" target="_blank" rel="noopener noreferrer" :href="issue.url">#{{issue.number}} {{issue.title}}</a>
-                    <b-tag 
-                      v-for="(label, i) in issue.labels" :key="i"
-                      :style="{ 
-                        backgroundColor: issuesPerLabel[label].color,
-                        color: fontColor(issuesPerLabel[label].color)
-                      }"
-                      rounded
-                      class="has-text-weight-bold"
-                    >{{label}}</b-tag>
+                  <div v-for="(issues, repo) in categorizeIssues(issuesPerLabel[label].issues)" :key="repo">
+                    <h2 class="has-text-weight-bold is-size-5">{{ repo }}</h2>
+                    <p class="has-text-weight-semibold" v-for="(issue, i) in issues" :key="i">
+                      <a target="_blank" rel="noopener noreferrer" :href="issue.url">#{{issue.number}} {{issue.title}}</a>
+                      <b-tag 
+                        v-for="(label, i) in issue.labels" :key="i"
+                        :style="{ 
+                          backgroundColor: issuesPerLabel[label].color,
+                          color: fontColor(issuesPerLabel[label].color)
+                        }"
+                        rounded
+                      >{{label}}</b-tag>
+                    </p>
                   </div>
                 </section>
                 <footer class="modal-card-foot">
@@ -29,6 +31,24 @@ const IssueList = {
             </div>
 `,
   methods: {
+    categorizeIssues(issues) {
+      const repos = {};
+      for (const issue of issues) {
+        let arr = repos[issue.repo];
+        if (!arr) {
+          arr = [];
+        }
+
+        arr.push(issue);
+        repos[issue.repo] = arr;
+      }
+
+      for (const repo in repos) {
+        repos[repo].sort((a, b) => a.number > b.number);
+      }
+
+      return repos;
+    },
     fontColor(hex) {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       const color = result

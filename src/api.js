@@ -67,6 +67,7 @@ export class GithubAPI {
       const issues = [];
       for (const rawIssue of rawIssues) {
         const issue = {
+          repo,
           number: rawIssue.number,
           url: rawIssue.url,
           closed: rawIssue.closed,
