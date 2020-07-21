@@ -14,7 +14,7 @@ function group(issues, start, end, interval, state) {
   let current = start.clone();
   for (let i = 0; i < numSlots; i++) {
     slots.push({
-      at: current.clone(),
+      x: current.clone(),
       datapoints: [],
     });
     current.add(interval, 'days');
@@ -128,6 +128,7 @@ query {
       edges {
         node {
           title
+          number
           url
           closed
           createdAt
@@ -136,6 +137,7 @@ query {
             edges {
               node {
                 name
+                color
               }
             }
           }
@@ -158,7 +160,7 @@ query {
       endCursor = `, after:"${result.pageInfo.endCursor}"`;
       issues.push(...result.edges.map(e => ({
         ...e.node,
-        labels: e.node.labels.edges.map(l => l.node.name),
+        labels: e.node.labels.edges.map(l => ({name: l.node.name, color: l.node.color})),
       })));
     }
 

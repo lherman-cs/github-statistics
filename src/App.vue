@@ -9,10 +9,7 @@
         @on-receive="updateIndex"
       />
       <Table :cumulative-sums="slicedCumulativeSums" :index="index" />
-      <CategoryPie
-        :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
-        :index="index"
-      />
+      <CategoryPie :issues="slicedIssues && slicedIssues.all.all" :index="index" />
     </section>
   </div>
 </template>
@@ -87,18 +84,23 @@ export default {
     }
   },
   computed: {
+    slicedIssues() {
+      return this.slice(this.issues, this.start);
+    },
     cumulativeSums() {
       if (!this.issues) {
         return null;
       }
 
       const cumulativeSum = sum => {
+        let datapoints = [];
         return sample => {
           sum += sample.datapoints.length;
+          datapoints.push(...sample.datapoints);
           return {
-            x: sample.at,
+            x: sample.x,
             y: sum,
-            datapoints: sample.datapoints
+            datapoints
           };
         };
       };
@@ -117,11 +119,16 @@ export default {
       return cumulativeSums;
     },
     slicedCumulativeSums() {
-      if (!this.cumulativeSums) {
+      return this.slice(this.cumulativeSums, this.start);
+    }
+  },
+  methods: {
+    slice(data, start) {
+      if (!data) {
         return null;
       }
 
-      const sliceByStart = (sums, start) => {
+      const sliceByStart = sums => {
         if (!start) {
           return sums;
         }
@@ -135,21 +142,19 @@ export default {
         return [];
       };
 
-      const sliceAll = cumulativeSums => ({
-        all: sliceByStart(cumulativeSums.all, this.start),
-        closed: sliceByStart(cumulativeSums.closed, this.start),
-        open: sliceByStart(cumulativeSums.open, this.start)
+      const sliceAll = e => ({
+        all: sliceByStart(e.all),
+        closed: sliceByStart(e.closed),
+        open: sliceByStart(e.open)
       });
 
-      const slicedCumulativeSums = {};
-      for (const repo in this.cumulativeSums) {
-        const cumulativeSums = this.cumulativeSums[repo];
-        slicedCumulativeSums[repo] = sliceAll(cumulativeSums);
+      const sliced = {};
+      for (const repo in data) {
+        const e = data[repo];
+        sliced[repo] = sliceAll(e);
       }
-      return slicedCumulativeSums;
-    }
-  },
-  methods: {
+      return sliced;
+    },
     updateIndex(index) {
       // since some charts use previous data, we can't use 0
       if (index === 0) {
