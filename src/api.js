@@ -7,6 +7,11 @@ function group(issues, start, end, interval, state) {
     state = "all"
   }
 
+  const now = moment();
+  if (!end || end > now) {
+    end = now;
+  }
+
   const range = end.diff(start, 'days');
   const numSlots = Math.ceil(range / interval);
   const slots = [];
@@ -29,7 +34,10 @@ function group(issues, start, end, interval, state) {
     const at = closed ? issue.closedAt : issue.createdAt;
     const diff = at.diff(start, "days");
     const i = Math.floor(diff / interval) + 1;
-    slots[i].datapoints.push(issue);
+    // since end can be less than now, it's possible that i is outside of max range
+    if (i < slots.length) {
+      slots[i].datapoints.push(issue);
+    }
   }
 
   return slots;
@@ -54,8 +62,10 @@ export class GithubAPI {
     });
   }
 
-  async issues(repos, interval, onProgress, mock) {
-    const end = moment();
+  async issues(repos, end, interval, onProgress, mock) {
+    if (!end) {
+      end = moment();
+    }
     let start = end.clone();
     let current = 0;
     const increment = () => {

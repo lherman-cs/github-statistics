@@ -36,6 +36,7 @@ export default {
       issues: null,
       index: -1,
       start: null,
+      end: null,
       progress: 0,
       unfetchedRepos: []
     };
@@ -57,6 +58,7 @@ export default {
 
     const repos = query.repos.split(",");
     this.start = query.start && moment(query.start);
+    this.end = query.end && moment(query.end);
     this.interval = parseInt(query.interval);
     if (!this.interval) {
       this.interval = 7;
@@ -77,6 +79,7 @@ export default {
       const api = new GithubAPI(token);
       this.issues = await api.issues(
         repos,
+        this.end,
         this.interval,
         (progress, total) => (this.progress = (progress * 100) / total)
       );
@@ -86,7 +89,7 @@ export default {
   },
   computed: {
     slicedIssues() {
-      return this.slice(this.issues, this.start);
+      return this.slice(this.issues, this.start, this.interval);
     },
     cumulativeSums() {
       if (!this.issues) {
@@ -120,33 +123,34 @@ export default {
       return cumulativeSums;
     },
     slicedCumulativeSums() {
-      return this.slice(this.cumulativeSums, this.start);
+      return this.slice(this.cumulativeSums, this.start, this.interval);
     }
   },
   methods: {
-    slice(data, start) {
+    slice(data, start, interval) {
       if (!data) {
         return null;
       }
 
-      const sliceByStart = sums => {
-        if (!start) {
-          return sums;
+      if (!start) {
+        start = moment.unix(0);
+      }
+
+      const slice = sums => {
+        if (!sums || sums.length === 0) {
+          return [];
         }
 
-        for (let i = 0; i < sums.length; i++) {
-          if (sums[i].x >= start) {
-            return sums.slice(i);
-          }
-        }
-
-        return [];
+        const range = start.diff(sums[0].x, "days");
+        let i = Math.max(0, Math.floor(range / interval) + 1);
+        i = Math.min(sums.length - 1, i);
+        return sums.slice(i);
       };
 
       const sliceAll = e => ({
-        all: sliceByStart(e.all),
-        closed: sliceByStart(e.closed),
-        open: sliceByStart(e.open)
+        all: slice(e.all),
+        closed: slice(e.closed),
+        open: slice(e.open)
       });
 
       const sliced = {};
