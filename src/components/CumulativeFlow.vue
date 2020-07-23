@@ -44,16 +44,25 @@ export default {
         return;
       }
 
+      const sharedOpts = {
+        pointBackgroundColor: cumulativeSums.all.map(() => "#f1f1f1"),
+        hitRadius: 3
+      };
+
       const openDataset = {
         label: "Open",
         data: cumulativeSums.all.map((e, i) => ({
           ...e,
           y: e.y - cumulativeSums.closed[i].y
-        }))
+        })),
+        backgroundColor: "#4f9a94",
+        ...sharedOpts
       };
       const closedDataset = {
         label: "Closed",
-        data: cumulativeSums.closed
+        data: cumulativeSums.closed,
+        backgroundColor: "#80cbc4",
+        ...sharedOpts
       };
       const datasets = [closedDataset, openDataset];
       this.chartData = { datasets };
