@@ -42,16 +42,6 @@ export default {
     };
   },
   async mounted() {
-    /*
-    const api = new GithubAPI("");
-    this.issues = await api.issues(
-      ["awslabs/amazon-kinesis-video-streams-webrtc-sdk-c"],
-      this.interval,
-      true
-    );
-    this.index = this.issues.all.all.length - 1;
-    */
-
     const query = this.$route.query;
 
     // TODO: Validate parameters and show error message
@@ -81,7 +71,8 @@ export default {
         repos,
         this.end,
         this.interval,
-        (progress, total) => (this.progress = (progress * 100) / total)
+        (progress, total) => (this.progress = (progress * 100) / total),
+        false
       );
     } else {
       await this.login();
