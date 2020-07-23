@@ -8,6 +8,7 @@ export default {
   props: ["cumulativeSums", "start"],
   data() {
     return {
+      prevIndex: -1,
       chartData: "",
       options: {
         onClick: (point, event) => {
@@ -71,6 +72,15 @@ export default {
   },
   methods: {
     handleOnClick(index) {
+      const datasets = this.chartData.datasets;
+      datasets[0].pointBackgroundColor[index] = "#0275D8";
+      datasets[1].pointBackgroundColor[index] = "#0275D8";
+      if (this.prevIndex !== -1) {
+        datasets[0].pointBackgroundColor[this.prevIndex] = "#f1f1f1";
+        datasets[1].pointBackgroundColor[this.prevIndex] = "#f1f1f1";
+      }
+      this.prevIndex = index;
+      this.$data._chart.update();
       this.$emit("on-receive", index);
     }
   }
