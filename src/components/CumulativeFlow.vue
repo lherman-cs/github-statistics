@@ -11,6 +11,9 @@ export default {
       prevIndex: -1,
       chartData: "",
       options: {
+        onHover: (event, chartElement) => {
+          event.target.style.cursor = chartElement[0] ? "pointer" : "default";
+        },
         onClick: (point, event) => {
           const item = event[0];
           this.handleOnClick(item._index);

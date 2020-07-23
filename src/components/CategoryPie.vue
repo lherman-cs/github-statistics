@@ -84,6 +84,9 @@ export default {
     return {
       chartData: "",
       options: {
+        onHover: (event, chartElement) => {
+          event.target.style.cursor = chartElement[0] ? "pointer" : "default";
+        },
         maintainAspectRatio: false,
         onClick: (point, event) => {
           const item = event[0];
