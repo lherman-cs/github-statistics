@@ -204,17 +204,22 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+#container > * {
+  padding: 10px;
+}
+
 @media only screen and (max-width: 968px) {
   #container {
     grid-template-areas:
       "cumulative-flow"
       "category-pie"
       "summary-table";
+    grid-template-rows: initial;
   }
-}
 
-#container > * {
-  padding: 5px;
+  #container > * {
+    padding: 5px;
+  }
 }
 
 #cumulative-flow {
