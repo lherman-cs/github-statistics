@@ -1,5 +1,12 @@
 <template>
-  <b-table :data="data" :columns="columns"></b-table>
+  <b-table
+    :data="data"
+    :columns="columns"
+    paginated
+    pagination-simple
+    per-page="5"
+    pagination-size="is-small"
+  ></b-table>
 </template>
 
 <script>
