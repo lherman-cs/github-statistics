@@ -10,7 +10,12 @@
     </b-field>
 
     <b-field label="Repositories">
-      <b-taginput v-model="repos" type="is-info" placeholder="e.g. lherman-cs/github-statistics"></b-taginput>
+      <b-taginput
+        v-model="repos"
+        type="is-info"
+        placeholder="e.g. lherman-cs/github-statistics"
+        ellipsis
+      ></b-taginput>
     </b-field>
 
     <b-button type="is-primary" id="query-btn" class="has-text-weight-bold" @click="onQuery">Query</b-button>
@@ -84,6 +89,7 @@ export default {
   transform: translate(-50%, -50%);
   height: auto;
   display: flex;
+  min-width: 300px;
   max-width: 600px;
   flex-direction: column;
 }
