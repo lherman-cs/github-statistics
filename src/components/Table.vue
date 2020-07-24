@@ -24,8 +24,8 @@ export default {
           label: "Open Issues Prev"
         },
         {
-          field: "openIssuesNext",
-          label: "Open Issues Next"
+          field: "openIssues",
+          label: "Open Issues"
         },
         {
           field: "closedIssues",
@@ -63,7 +63,7 @@ export default {
         rows.push({
           repo: cols[0],
           openIssuesPrev: cols[1],
-          openIssuesNext: cols[2],
+          openIssues: cols[2],
           closedIssues: cols[3]
         });
       }
