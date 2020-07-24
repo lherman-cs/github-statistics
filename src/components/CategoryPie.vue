@@ -11,8 +11,8 @@ const IssueList = {
                 </header>
                 <section class="modal-card-body">
                   <div v-for="(issues, repo) in categorizeIssues(issuesPerLabel[label].issues)" :key="repo">
-                    <h2 class="has-text-weight-bold is-size-5">{{ repo }}</h2>
-                    <p class="has-text-weight-semibold" v-for="(issue, i) in issues" :key="i">
+                    <h2 class="is-size-6-desktop is-size-7-touch has-text-weight-bold	">{{ repo }}</h2>
+                    <p class="is-size-6-desktop is-size-7-touch" v-for="(issue, i) in issues" :key="i">
                       <a target="_blank" rel="noopener noreferrer" :href="issue.url">#{{issue.number}} {{issue.title}}</a>
                       <b-tag 
                         v-for="(label, i) in issue.labels" :key="i"
