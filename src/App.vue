@@ -1,17 +1,25 @@
 <template>
   <div id="app">
-    <section v-if="progress < 100">
-      <b-progress type="is-info" :value="progress" show-value format="percent"></b-progress>
-    </section>
-    <section id="container" v-else>
-      <CumulativeFlow
-        :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
-        @on-receive="updateIndex"
-        id="cumulative-flow"
-      />
-      <CategoryPie :issues="slicedIssues && slicedIssues.all.all" :index="index" id="category-pie" />
-      <Table :cumulative-sums="slicedCumulativeSums" :index="index" id="summary-table" />
-    </section>
+    <template v-if="!showQueryGenerator">
+      <section v-if="progress < 100">
+        <b-progress type="is-info" :value="progress" show-value format="percent"></b-progress>
+      </section>
+      <section id="container" v-else>
+        <CumulativeFlow
+          :cumulative-sums="slicedCumulativeSums && slicedCumulativeSums.all"
+          @on-receive="updateIndex"
+          id="cumulative-flow"
+        />
+        <CategoryPie
+          :issues="slicedIssues && slicedIssues.all.all"
+          :index="index"
+          id="category-pie"
+        />
+        <Table :cumulative-sums="slicedCumulativeSums" :index="index" id="summary-table" />
+      </section>
+    </template>
+
+    <QueryGenerator v-else />
   </div>
 </template>
 
@@ -22,12 +30,14 @@ import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
 import Table from "./components/Table.vue";
 import CategoryPie from "./components/CategoryPie.vue";
+import QueryGenerator from "./components/QueryGenerator.vue";
 
 export default {
   components: {
     CumulativeFlow,
     Table,
-    CategoryPie
+    CategoryPie,
+    QueryGenerator
   },
   data() {
     return {
@@ -38,7 +48,8 @@ export default {
       start: null,
       end: null,
       progress: 0,
-      unfetchedRepos: []
+      unfetchedRepos: [],
+      showQueryGenerator: false
     };
   },
   async mounted() {
@@ -46,7 +57,18 @@ export default {
 
     // TODO: Validate parameters and show error message
 
-    const repos = query.repos.split(",");
+    const reposStr = query.repos;
+    if (!reposStr) {
+      this.showQueryGenerator = true;
+      return;
+    }
+
+    const repos = reposStr.split(",");
+    if (!repos || repos.length === 0) {
+      this.showQueryGenerator = true;
+      return;
+    }
+
     this.start = query.start && moment(query.start);
     this.end = query.end && moment(query.end);
     this.interval = parseInt(query.interval);
