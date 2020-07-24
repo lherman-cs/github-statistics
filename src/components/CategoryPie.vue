@@ -86,6 +86,11 @@ export default {
     return {
       chartData: "",
       options: {
+        legend: {
+          onHover: event => {
+            event.target.style.cursor = "pointer";
+          }
+        },
         onHover: (event, chartElement) => {
           event.target.style.cursor = chartElement[0] ? "pointer" : "default";
         },
