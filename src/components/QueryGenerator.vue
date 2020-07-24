@@ -5,6 +5,10 @@
       <b-datepicker placeholder="Click to select..." v-model="dates" range icon="calendar-today"></b-datepicker>
     </b-field>
 
+    <b-field label="Interval in Days">
+      <b-numberinput v-model="interval" min="1"></b-numberinput>
+    </b-field>
+
     <b-field label="Repositories">
       <b-taginput v-model="repos" type="is-info" placeholder="e.g. lherman-cs/github-statistics"></b-taginput>
     </b-field>
@@ -19,18 +23,36 @@ export default {
     let start = new Date();
     start.setMonth(start.getMonth() - 3);
     let end = new Date();
+    let interval = 7;
     let repos = [];
 
     const lastChoiceStr = window.localStorage.getItem("lastChoice");
     if (lastChoiceStr) {
-      const lastChoice = JSON.parse(lastChoiceStr);
-      start = new Date(lastChoice.start);
-      end = new Date(lastChoice.end);
-      repos = lastChoice.repos;
+      try {
+        const lastChoice = JSON.parse(lastChoiceStr);
+        if (lastChoice.start) {
+          start = new Date(lastChoice.start);
+        }
+
+        if (lastChoice.end) {
+          end = new Date(lastChoice.end);
+        }
+
+        if (lastChoice.interval) {
+          interval = lastChoice.interval;
+        }
+
+        if (lastChoice.repos) {
+          repos = lastChoice.repos;
+        }
+      } catch (e) {
+        /* explicit ignore, use default values instead */
+      }
     }
 
     return {
       dates: [start, end],
+      interval,
       repos
     };
   },
@@ -39,11 +61,12 @@ export default {
       const start = this.dates[0].toISOString();
       const end = this.dates[1].toISOString();
       const repos = this.repos.join(",");
-      const url = `?repos=${repos}&start=${start}&end=${end}`;
+      const url = `?repos=${repos}&start=${start}&end=${end}&interval=${this.interval}`;
 
       const lastChoice = {
         start: this.dates[0],
         end: this.dates[1],
+        interval: this.interval,
         repos: this.repos
       };
       window.localStorage.setItem("lastChoice", JSON.stringify(lastChoice));
