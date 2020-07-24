@@ -36,14 +36,16 @@ const IssueList = {
       for (const issue of issues) {
         let arr = repos[issue.repo];
         if (!arr) {
-          arr = [];
+          arr = {};
         }
 
-        arr.push(issue);
+        arr[issue.number] = issue;
         repos[issue.repo] = arr;
       }
 
       for (const repo in repos) {
+        const arr = repos[repo];
+        repos[repo] = Object.keys(arr).map(k => arr[k]);
         repos[repo].sort((a, b) => a.number > b.number);
       }
 
