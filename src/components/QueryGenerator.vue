@@ -2,7 +2,13 @@
   <section id="container">
     <h1 class="is-size-1-desktop is-size-3-touch has-text-centered">Github Statistics</h1>
     <b-field label="Query Range">
-      <b-datepicker placeholder="Click to select..." v-model="dates" range icon="calendar-today"></b-datepicker>
+      <b-datepicker
+        placeholder="Click to select..."
+        v-model="dates"
+        range
+        icon="calendar-today"
+        :mobile-native="false"
+      ></b-datepicker>
     </b-field>
 
     <b-field label="Interval in Days">
