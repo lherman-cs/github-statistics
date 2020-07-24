@@ -1,10 +1,11 @@
 <template>
   <b-table
+    ref="table"
     :data="data"
     :columns="columns"
     paginated
     pagination-simple
-    per-page="5"
+    :per-page="perPage"
     pagination-size="is-small"
   ></b-table>
 </template>
@@ -12,8 +13,16 @@
 <script>
 export default {
   props: ["cumulativeSums", "index"],
+  created() {
+    window.addEventListener("resize", this.onResize);
+    this.onResize({ target: window });
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.onResize);
+  },
   data() {
     return {
+      perPage: 5,
       columns: [
         {
           field: "repo",
@@ -69,6 +78,17 @@ export default {
       }
 
       return rows;
+    }
+  },
+  methods: {
+    onResize(e) {
+      const width = e.target.innerWidth;
+      const height = e.target.innerHeight;
+      if (width > 1216 && height > 800) {
+        this.perPage = 10;
+      } else {
+        this.perPage = 5;
+      }
     }
   }
 };
