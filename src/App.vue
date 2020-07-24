@@ -200,6 +200,7 @@ body {
   grid-template-areas:
     "category-pie summary-table"
     "cumulative-flow cumulative-flow";
+  grid-template-rows: minmax(60%, 1fr) minmax(40%, 1fr);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
@@ -213,8 +214,6 @@ body {
 }
 
 #container > * {
-  max-height: 800px;
-  min-height: 400px;
   padding: 5px;
 }
 
