@@ -7,11 +7,6 @@ function group(issues, start, end, interval, state) {
     state = "all"
   }
 
-  const now = moment();
-  if (!end || end > now) {
-    end = now;
-  }
-
   const range = end.diff(start, 'days');
   const numSlots = Math.ceil(range / interval);
   const slots = [];
@@ -63,8 +58,9 @@ export class GithubAPI {
   }
 
   async issues(repos, end, interval, onProgress, mock) {
-    if (!end) {
-      end = moment();
+    const now = moment();
+    if (!end || end > now) {
+      end = now;
     }
     let start = end.clone();
     let current = 0;
