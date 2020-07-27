@@ -78,6 +78,7 @@ export default {
 
     let token = null;
 
+    /* TODO: reenable cache
     token = window.localStorage.getItem("token");
     if (!token) {
       const result = await firebase.auth().getRedirectResult();
@@ -85,6 +86,13 @@ export default {
         token = result.credential.accessToken;
         window.localStorage.setItem("token", token);
       }
+    }
+    */
+
+    const result = await firebase.auth().getRedirectResult();
+    if (result.credential) {
+      token = result.credential.accessToken;
+      window.localStorage.setItem("token", token);
     }
 
     if (token) {
@@ -182,16 +190,7 @@ export default {
     },
     async login() {
       const provider = new firebase.auth.GithubAuthProvider();
-      provider.addScope("user");
       provider.addScope("public_repo");
-      provider.addScope("repo");
-      provider.addScope("repo_deployment");
-      provider.addScope("repo:status");
-      provider.addScope("read:repo_hook");
-      provider.addScope("read:org");
-      provider.addScope("read:public_key");
-      provider.addScope("read:gpg_key");
-
       await firebase.auth().signInWithRedirect(provider);
     }
   }
