@@ -1,7 +1,8 @@
 import Vue from "vue";
 import App from "./App.vue";
 import VueRouter from "vue-router";
-import firebase from "firebase";
+import firebase from "firebase/app";
+import "firebase/auth";
 import {library, dom} from "@fortawesome/fontawesome-svg-core";
 import {faGithub} from "@fortawesome/free-brands-svg-icons";
 import Buefy from "buefy";
