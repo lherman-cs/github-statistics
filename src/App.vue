@@ -2,7 +2,12 @@
   <div id="app">
     <template v-if="!showQueryGenerator">
       <section v-if="progress < 100">
-        <b-progress type="is-info" :value="progress" show-value format="percent"></b-progress>
+        <b-progress
+          type="is-info"
+          :value="progress"
+          show-value
+          format="percent"
+        ></b-progress>
       </section>
       <section id="container" v-else>
         <CumulativeFlow
@@ -15,7 +20,27 @@
           :index="index"
           id="category-pie"
         />
-        <Table :cumulative-sums="slicedCumulativeSums" :index="index" id="summary-table" />
+        <div id="container-average-bar">
+          <AverageBar
+            id="average-bar"
+            :issues="
+              slicedIssues &&
+                (averageBar.showOpen
+                  ? slicedIssues.all.open
+                  : slicedIssues.all.closed)
+            "
+          />
+          <b-switch id="average-bar-toggle" v-model="averageBar.showOpen"
+            >Open Issues</b-switch
+          >
+        </div>
+        <!--
+        <Table
+          :cumulative-sums="slicedCumulativeSums"
+          :index="index"
+          id="summary-table"
+        />
+        -->
       </section>
     </template>
 
@@ -28,14 +53,16 @@ import firebase from "firebase/app";
 import moment from "moment";
 import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
-import Table from "./components/Table.vue";
+// import Table from "./components/Table.vue";
 import CategoryPie from "./components/CategoryPie.vue";
+import AverageBar from "./components/AverageBar.vue";
 import QueryGenerator from "./components/QueryGenerator.vue";
 
 export default {
   components: {
     CumulativeFlow,
-    Table,
+    // Table,
+    AverageBar,
     CategoryPie,
     QueryGenerator
   },
@@ -49,7 +76,10 @@ export default {
       end: null,
       progress: 0,
       unfetchedRepos: [],
-      showQueryGenerator: false
+      showQueryGenerator: false,
+      averageBar: {
+        showOpen: false
+      }
     };
   },
   async mounted() {
@@ -253,5 +283,20 @@ body {
 
 #summary-table {
   grid-area: summary-table;
+}
+
+#container-average-bar {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+#average-bar {
+  flex: 1 1 auto;
+}
+
+#average-bar-toggle {
+  align-self: center;
 }
 </style>

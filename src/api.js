@@ -1,13 +1,12 @@
 import moment from "moment";
 import mockData from "./mock.json";
 
-
 function group(issues, start, end, interval, state) {
   if (!state) {
-    state = "all"
+    state = "all";
   }
 
-  const range = end.diff(start, 'days');
+  const range = end.diff(start, "days");
   const numSlots = Math.ceil(range / interval);
   const slots = [];
   start = end.clone().subtract(interval * (numSlots - 1), "days");
@@ -15,9 +14,9 @@ function group(issues, start, end, interval, state) {
   for (let i = 0; i < numSlots; i++) {
     slots.push({
       x: current.clone(),
-      datapoints: [],
+      datapoints: []
     });
-    current.add(interval, 'days');
+    current.add(interval, "days");
   }
 
   const closed = state === "closed";
@@ -38,7 +37,6 @@ function group(issues, start, end, interval, state) {
   return slots;
 }
 
-
 export class GithubAPI {
   constructor(token, endpoint) {
     this._token = token;
@@ -50,10 +48,10 @@ export class GithubAPI {
     return fetch(this._endpoint, {
       method: "POST",
       headers: {
-        "Authorization": `bearer ${this._token}`,
+        Authorization: `bearer ${this._token}`
       },
-      body: JSON.stringify({query}),
-      ...opts,
+      body: JSON.stringify({ query }),
+      ...opts
     });
   }
 
@@ -68,7 +66,7 @@ export class GithubAPI {
       current++;
       onProgress(current, repos.length);
     };
-    const greedyFetch = async (repo) => {
+    const greedyFetch = async repo => {
       const rawIssues = await (mock ? this._mockIssues() : this._issues(repo));
       const issues = [];
       for (const rawIssue of rawIssues) {
@@ -81,7 +79,7 @@ export class GithubAPI {
           createdAt: moment(rawIssue.createdAt),
           updatedAt: moment(rawIssue.updatedAt),
           closedAt: rawIssue.closedAt && moment(rawIssue.closedAt),
-          labels: rawIssue.labels,
+          labels: rawIssue.labels
         };
 
         if (issue.createdAt < start) {
@@ -96,13 +94,13 @@ export class GithubAPI {
     };
 
     const results = await Promise.all(repos.map(greedyFetch));
-    const groupIssues = (issues) => {
+    const groupIssues = issues => {
       return {
         all: group(issues, start, end, interval, "all"),
         open: group(issues, start, end, interval, "open"),
-        closed: group(issues, start, end, interval, "closed"),
+        closed: group(issues, start, end, interval, "closed")
       };
-    }
+    };
 
     const issues = {};
     const flat = [];
@@ -158,17 +156,21 @@ query {
   }
 }`;
 
-
       const response = await this._fetch(query);
       const body = await response.json();
 
       const result = body.data.repository.issues;
       hasNextPage = result.pageInfo.hasNextPage;
       endCursor = `, after:"${result.pageInfo.endCursor}"`;
-      issues.push(...result.edges.map(e => ({
-        ...e.node,
-        labels: e.node.labels.edges.map(l => ({name: l.node.name, color: l.node.color})),
-      })));
+      issues.push(
+        ...result.edges.map(e => ({
+          ...e.node,
+          labels: e.node.labels.edges.map(l => ({
+            name: l.node.name,
+            color: l.node.color
+          }))
+        }))
+      );
     }
 
     return issues;
