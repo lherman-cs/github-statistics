@@ -12,6 +12,8 @@ function getRandomColor() {
   return color;
 }
 
+const colors = {};
+
 export default {
   extends: Bar,
   mixins: [reactiveData],
@@ -90,8 +92,12 @@ export default {
 
       const datasets = [];
       for (const repo in averagesPerRepo) {
+        if (!(repo in colors)) {
+          colors[repo] = getRandomColor();
+        }
+
         datasets.push({
-          backgroundColor: getRandomColor(),
+          backgroundColor: colors[repo],
           label: repo,
           data: averagesPerRepo[repo].buckets
         });
