@@ -15,7 +15,7 @@
           @on-receive="updateIndex"
           id="cumulative-flow"
         />
-        <CategoryPie
+        <CategoryBar
           :issues="slicedIssues && slicedIssues.all.all"
           :index="index"
           id="category-pie"
@@ -25,14 +25,39 @@
             id="average-bar"
             :issues="
               slicedIssues &&
-                (averageBar.showOpen
+                (averageBar.status === 'all'
+                  ? slicedIssues.all.all
+                  : averageBar.status === 'open'
                   ? slicedIssues.all.open
                   : slicedIssues.all.closed)
             "
           />
+          <!--
           <b-switch id="average-bar-toggle" v-model="averageBar.showOpen"
             >Open Issues</b-switch
           >
+          -->
+
+          <b-dropdown aria-role="list" v-model="averageBar.status">
+            <button
+              class="button is-primary"
+              slot="trigger"
+              slot-scope="{ active }"
+            >
+              <span>Click me!</span>
+              <b-icon :icon="active ? 'menu-up' : 'menu-down'"></b-icon>
+            </button>
+
+            <b-dropdown-item aria-role="listitem" value="all"
+              >All</b-dropdown-item
+            >
+            <b-dropdown-item aria-role="listitem" value="open"
+              >Open</b-dropdown-item
+            >
+            <b-dropdown-item aria-role="listitem" value="closed"
+              >Closed</b-dropdown-item
+            >
+          </b-dropdown>
         </div>
         <!--
         <Table
@@ -54,7 +79,7 @@ import moment from "moment";
 import { GithubAPI } from "./api";
 import CumulativeFlow from "./components/CumulativeFlow.vue";
 // import Table from "./components/Table.vue";
-import CategoryPie from "./components/CategoryPie.vue";
+import CategoryBar from "./components/CategoryBar.vue";
 import AverageBar from "./components/AverageBar.vue";
 import QueryGenerator from "./components/QueryGenerator.vue";
 
@@ -63,7 +88,7 @@ export default {
     CumulativeFlow,
     // Table,
     AverageBar,
-    CategoryPie,
+    CategoryBar,
     QueryGenerator
   },
   data() {
@@ -78,7 +103,7 @@ export default {
       unfetchedRepos: [],
       showQueryGenerator: false,
       averageBar: {
-        showOpen: false
+        status: "all"
       }
     };
   },

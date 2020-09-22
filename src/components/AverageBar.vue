@@ -13,6 +13,7 @@ function getRandomColor() {
 }
 
 const colors = {};
+const ranks = {};
 
 export default {
   extends: Bar,
@@ -91,17 +92,24 @@ export default {
       }
 
       const datasets = [];
+      let rank = 0;
       for (const repo in averagesPerRepo) {
         if (!(repo in colors)) {
           colors[repo] = getRandomColor();
+          ranks[repo] = rank;
         }
 
         datasets.push({
           backgroundColor: colors[repo],
           label: repo,
-          data: averagesPerRepo[repo].buckets
+          data: averagesPerRepo[repo].buckets,
+          rank: ranks[repo]
         });
+
+        rank++;
       }
+
+      datasets.sort((a, b) => a.rank - b.rank);
 
       this.chartData = {
         datasets,
